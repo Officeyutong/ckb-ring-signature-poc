@@ -41,7 +41,7 @@ pub fn check_hash_rsa2(message: &[u8], buf: &[u8]) -> Result<(), &'static str> {
         let n = Uint2048::from_le_slice(&buf[start_offset + 256 + 4..start_offset + 256 + 4 + 256])
             .unwrap();
         ckb_std::debug!("e={}, cycle={}", e, current_cycles());
-        let value = power_mod::<32, 64>(mul_mod_expand::<32, 64>(r, last_c, n), e, n);
+        let value = power_mod::<32, 64>(mul_mod_expand::<32, 64>(r, last_c, n), e as u64, n);
         ckb_std::debug!("rsa, cycle={}", current_cycles());
         last_c = compund_hash(value);
         ckb_std::debug!("hash, cycle={}", current_cycles());

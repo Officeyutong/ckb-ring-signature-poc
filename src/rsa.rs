@@ -41,7 +41,7 @@ pub fn check_hash_rsa(message: &[u8], buf: &[u8]) -> Result<(), &'static str> {
             Uint2048::from_le_slice(&buf[..256]).unwrap()
         };
         let c1 = current_cycles();
-        let y = unsafe { power_mod::<32, 64>(x, e, n) };
+        let y = unsafe { power_mod::<32, 64>(x, e as u64, n) };
         equation = equation ^ y;
         let c2 = current_cycles();
         let input_block = equation.digits_mut();
