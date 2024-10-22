@@ -53,22 +53,20 @@ pub fn check_hash_rsa2<T: Fn(usize) -> ()>(
         let n = Uint2048::from_le_slice(&buf[start_offset + 256 + 4..start_offset + 256 + 4 + 256])
             .unwrap();
         ckb_std::debug!("e={}, cycle={}", e, current_cycles());
-        let rcpe = power_mod::<32, 64>(mul_mod_expand::<32, 64>(r, last_c, n.clone()), e as u64, n);
-        ckb_std::debug!("rsa, cycle={}", current_cycles());
-        // c = CH(rcpe, (rcpe) ^ {e} ^ {I} * H)
-        last_c = compund_hash(
-            &rcpe,
-            &mul_mod_expand::<32, 64>(
-                // power_mod_buint::<32, 64>(
-                //     power_mod::<32, 64>(rcpe, e as u64, n),
-                //     image.clone(),
-                //     n.clone(),
-                // ),
-                add_mod_expand::<32, 33>(rcpe, image, n),
-                sha256_for_integer(&n),
+        let r_power_e = power_mod::<32, 64>(r, e.into(), n);
+
+        let c_mul_r_power_e = mul_mod_expand::<32, 64>(last_c, r_power_e, n);
+        let ch_pi_mul_r = mul_mod_expand::<32, 64>(
+            add_mod_expand::<32, 33>(
+                mul_mod_expand::<32, 64>(last_c, sha256_for_integer(&n), n),
+                image,
                 n,
             ),
+            r_power_e,
+            n,
         );
+
+        last_c = compund_hash(&c_mul_r_power_e, &ch_pi_mul_r);
         ckb_std::debug!("hash, cycle={}", current_cycles());
     }
 
